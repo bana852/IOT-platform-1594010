@@ -1,0 +1,215 @@
+  <html>
+  <head>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      var tempArr = [];
+      var timeArr = [];
+      var humiArr = [];
+      var co2Arr = [];
+      var max = 0;
+
+      var i = 0;
+
+      function Start() {
+          invokeAPI1();
+      }
+      function Start2() {
+        invokeAPI2();
+      }
+
+      var invokeAPI = function() {
+
+          // 디바이스 조회 URI
+          // prod 스테이지 편집기의 맨 위에 있는 "호출 URL/devices"로 대체해야 함
+          var API_URI = 'https://9qev3sgbna.execute-api.us-east-1.amazonaws.com/prod/devices/Logging/log?from=2019-11-29%2000:00:00&to=2020-11-29%2018:09:36';               
+          $.ajax(API_URI, {
+              method: 'GET',
+              contentType: "application/json",
+
+              success: function (data, status, xhr) {
+
+                  var result = JSON.parse(data);
+                  setDataList(result.data);  // 성공시, 데이터 출력을 위한 함수 호출
+                  console.log(data);
+                  alert("2 ok");
+              },
+              error: function(xhr,status,e){
+                //  document.getElementById("result").innerHTML="Error";
+                  alert("error");
+              }
+          });
+      };
+
+      setTimeout(function() { // 0.3초 후에 invokeAPI() 수행
+          invokeAPI();
+          alert("1 ok");  
+      }, 1000);
+
+      var invokeAPI1 = function() {
+
+          // 디바이스 조회 URI
+          // prod 스테이지 편집기의 맨 위에 있는 "호출 URL/devices"로 대체해야 함
+          var API_URI = 'https://9qev3sgbna.execute-api.us-east-1.amazonaws.com/prod/devices/MyMKRWiFi1010';
+
+          var j = {
+              "tags": [
+                  {
+                      "tagName": "LED",
+                      "tagValue": "OFF"
+                  }
+              ]
+          };
+
+          $.ajax(API_URI, {
+              method: 'PUT',
+              contentType: "application/json",
+              data : JSON.stringify(j),
+
+              success: function (data, status, xhr) {
+                  console.log(j);
+              },
+              error: function(xhr,status,e){
+                //  document.getElementById("result").innerHTML="Error";
+                  alert("error");
+              }
+          });
+      };
+
+      var invokeAPI2 = function() {
+
+          // 디바이스 조회 URI
+          // prod 스테이지 편집기의 맨 위에 있는 "호출 URL/devices"로 대체해야 함
+          var API_URI = 'https://9qev3sgbna.execute-api.us-east-1.amazonaws.com/prod/devices/MyMKRWiFi1010';
+
+          var j = {
+              "tags": [
+                  {
+                      "tagName": "LED",
+                      "tagValue": "ON"
+                  }
+              ]
+          };
+
+          $.ajax(API_URI, {
+              method: 'PUT',
+              contentType: "application/json",
+              data : JSON.stringify(j),
+
+              success: function (data, status, xhr) {
+                  console.log(j);
+              },
+              error: function(xhr,status,e){
+                //  document.getElementById("result").innerHTML="Error";
+                  alert("error");
+              }
+          });
+      };
+
+
+      var setDataList = function(data){
+
+            data.forEach(function(v){
+                tempArr.push(v.temperature);
+                timeArr.push(v.timestamp);
+                humiArr.push(v.humidity);
+                co2Arr.push(v.co2);
+                //alert(typeof tempArr[i]);
+                i++;
+            })
+            for(var j = 0 ; j < i ; j++){
+              tempArr[j] *= 1;
+              humiArr[j] *= 1;
+              co2Arr[j] *= 1;
+            }
+      }
+      
+    
+
+      setTimeout(function() { // 0.3초 후에 invokeAPI() 수행
+            drawChart1();        
+        }, 3000);
+      setTimeout(function() { // 0.3초 후에 invokeAPI() 수행
+            drawChart();        
+        }, 3000);
+
+      google.charts.load('current', {'packages':['corechart']});
+      google.charts.setOnLoadCallback(drawChart1);
+
+      function drawChart1() {
+        var data1 = google.visualization.arrayToDataTable([
+          ['Year', 'Temperature', 'humidity' , 'co2'],
+          [timeArr[i-10], tempArr[i-10],humiArr[i-10],co2Arr[i-10]],
+          [timeArr[i-9], tempArr[i-9],humiArr[i-9],co2Arr[i-9]],
+          [timeArr[i-8], tempArr[i-8],humiArr[i-8],co2Arr[i-8]],
+          [timeArr[i-7], tempArr[i-7],humiArr[i-7],co2Arr[i-7]],
+          [timeArr[i-6], tempArr[i-6],humiArr[i-6],co2Arr[i-6]],
+          [timeArr[i-5], tempArr[i-5],humiArr[i-5],co2Arr[i-5]],
+          [timeArr[i-4], tempArr[i-4],humiArr[i-4],co2Arr[i-4]],
+          [timeArr[i-3], tempArr[i-3],humiArr[i-3],co2Arr[i-3]],
+          [timeArr[i-2], tempArr[i-2],humiArr[i-2],co2Arr[i-2]],
+          [timeArr[i-1], tempArr[i-1],humiArr[i-1],co2Arr[i-1]]
+        ]);
+
+        var options = {
+          title: '그래프',
+          curveType: 'function',
+          legend: { position: 'bottom' }
+        };
+
+        var chart1 = new google.visualization.LineChart(document.getElementById('curve_chart'));
+
+        chart1.draw(data1, options);
+      }
+      google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Co2', co2Arr[i-1]],
+          ['Temperature', tempArr[i-1]],
+          ['humidity', humiArr[i-1]]
+        ]);
+
+        var options = {
+          width: 700, height: 250,
+          minorTicks: 5
+        };
+
+        var chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+
+        chart.draw(data, options);
+      }
+
+    </script>
+    <style>
+            #contents{
+                width: 620px;
+                padding: 20px;
+                float: left;
+                margin-bottom: 20px;
+                padding-top: 50px;
+            }
+            #sidebar{
+                width: 220px;
+                padding: 20px;
+                margin-left: 700px;
+                padding-top: 150px;
+                margin-bottom: 20px;
+            }
+    </style>
+  </head>
+  <body>
+    <div id = "contents">
+      <div id="curve_chart" style="width: 800px; height: 500px"></div>
+    </div>
+    <div id = "sidebar">
+      <div id="chart_div" style="width: 400px; height: 500px;"></div>
+      <div>
+        <input type="button" style="padding: 10px" value="OFF" onclick="Start();" /> <input type="button"style="padding: 10px" value=" ON " onclick="Start2();" />
+      </div>
+    </div>
+  </body>
+</html>
